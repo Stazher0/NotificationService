@@ -16,12 +16,12 @@ CREATE TABLE notifications (
 
 -- Создание таблицы templates
 CREATE TABLE templates (
-                           id BIGSERIAL PRIMARY KEY,
+                           template_id BIGSERIAL PRIMARY KEY,
                            name VARCHAR(255) NOT NULL UNIQUE,
                            notification_type VARCHAR(20) NOT NULL,
                            theme VARCHAR(255),
                            content TEXT NOT NULL,
-                           variable TEXT,
+                           --variable TEXT,
                            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

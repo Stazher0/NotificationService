@@ -13,7 +13,7 @@ public class Template {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long templateId;
 
     @Column(unique = true,nullable = false)
     private String name; //уникальное название
@@ -27,8 +27,9 @@ public class Template {
     @Column(nullable = false)
     private String content; //текст уведомления
 
-    @Column(nullable = false)
-    private String variable; //JSON с доступными переменными
+//    @Column(nullable = false)
+//    private String variable; //JSON с доступными переменными
+//    Временно не использую
 
     @Column(nullable = false,updatable = false)
     private Date createdAt;
