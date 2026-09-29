@@ -36,12 +36,12 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notification_service
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: ${PROFILE:-dev}
+      SPRING_PROFILES_ACTIVE: ${PROFILE:-prod}
     ports:
       - "8081:8081"
     env_file:
       - .env
-      - .env.${PROFILE:-dev}
+      - .env.${PROFILE:-prod}
 
 volumes:
   postgres_data:

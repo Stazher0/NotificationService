@@ -21,7 +21,7 @@ CREATE TABLE templates (
                            notification_type VARCHAR(20) NOT NULL,
                            theme VARCHAR(255),
                            content TEXT NOT NULL,
-                           --variable TEXT,
+                           variable TEXT,
                            created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

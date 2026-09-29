@@ -9,7 +9,12 @@ import zhulikov.project.notificationservice.dto.TemplateCreateRequest;
 import zhulikov.project.notificationservice.dto.TemplateResponse;
 import zhulikov.project.notificationservice.entity.Template;
 import zhulikov.project.notificationservice.exceptions.TemplateAlreadyExistsException;
+import zhulikov.project.notificationservice.mapper.TemplateMapper;
 import zhulikov.project.notificationservice.repository.TemplateRepo;
+
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +22,22 @@ import zhulikov.project.notificationservice.repository.TemplateRepo;
 public class TemplateService {
 
     private final TemplateRepo templateRepo;
+    private final TemplateMapper templateMapper;
+
+    private static final Pattern VARIABLE =
+            Pattern.compile("\\{\\{\\s*([^{}]+?)\\s*}}");
+
+    public String render(Map<String,Object> variables, Long templateId) {
+
+        Template template = templateRepo.findById(templateId)
+                .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        String result = replaceVariables(template.getContent(), variables);
+
+        log.debug("Rendered template id={} with {} variables", templateId, variables.size());
+
+        return result;
+    }
 
     public TemplateResponse create(TemplateCreateRequest dto) {
 
@@ -24,12 +45,12 @@ public class TemplateService {
             throw new TemplateAlreadyExistsException(dto.getName());
         }
 
-        Template template = createDtoToTemplate(dto);
+        Template template = templateMapper.createDtoToTemplate(dto);
         Template saved = templateRepo.save(template);
 
         log.info("Template saved id = {}",saved.getTemplateId());
 
-        return templateToResponseDto(saved);
+        return templateMapper.templateToResponseDto(saved);
     }
 
     public TemplateResponse update(Long id,TemplateCreateRequest dto) {
@@ -42,13 +63,13 @@ public class TemplateService {
             throw new TemplateAlreadyExistsException(dto.getName());
         }
 
-        applyDtoToTemplate(template, dto);
+        templateMapper.applyDtoToTemplate(template, dto);
 
         Template saved = templateRepo.save(template);
 
         log.info("Template updated id = {}",saved.getTemplateId());
 
-        return templateToResponseDto(saved);
+        return templateMapper.templateToResponseDto(saved);
     }
 
     public void delete(Long id) {
@@ -62,37 +83,28 @@ public class TemplateService {
         log.info("Template deleted id = {}",id);
     }
 
-    private Template createDtoToTemplate(TemplateCreateRequest dto) {
+    private String replaceVariables(String content, Map<String,Object> variables) {
 
-        Template template = new Template();
+        Matcher matcher = VARIABLE.matcher(content);
+        StringBuilder result = new StringBuilder();
 
-        template.setName(dto.getName());
-        template.setTheme(dto.getTheme());
-        template.setContent(dto.getContent());
-        template.setNotificationType(dto.getNotificationType());
+        while (matcher.find()) {
+            String key = matcher.group(1).trim();
+            Object value = variables.get(key);
 
-        return template;
+            String replacement = value == null
+                    ? matcher.group(0)       // оставить {{key}}, если значения нет
+                    : String.valueOf(value);
+
+            matcher.appendReplacement(
+                    result,
+                    Matcher.quoteReplacement(replacement)
+            );
+        }
+
+        matcher.appendTail(result);
+
+        return result.toString();
     }
 
-    private TemplateResponse templateToResponseDto(Template template) {
-
-        TemplateResponse templateResponse = new TemplateResponse();
-
-        templateResponse.setTemplateId(template.getTemplateId());
-        templateResponse.setName(template.getName());
-        templateResponse.setTheme(template.getTheme());
-        templateResponse.setContent(template.getContent());
-        templateResponse.setNotificationType(template.getNotificationType());
-        templateResponse.setCreatedAt(template.getCreatedAt());
-
-        return templateResponse;
-    }
-
-    private void applyDtoToTemplate(Template template, TemplateCreateRequest dto) {
-
-        template.setNotificationType(dto.getNotificationType());
-        template.setName(dto.getName());
-        template.setTheme(dto.getTheme());
-        template.setContent(dto.getContent());
-    }
 }

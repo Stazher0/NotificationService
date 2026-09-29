@@ -5,6 +5,8 @@ import lombok.NoArgsConstructor;
 import zhulikov.project.notificationservice.enums.NotificationType;
 import zhulikov.project.notificationservice.enums.PriorityType;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 public class SendNotificationRequest {
@@ -14,4 +16,7 @@ public class SendNotificationRequest {
     private String theme;
     private String content;
     private PriorityType priorityType =  PriorityType.MEDIUM;
+
+    private Map<String,Object> variables;
+    private Long templateId;
 }

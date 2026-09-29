@@ -27,9 +27,7 @@ public class Template {
     @Column(nullable = false)
     private String content; //текст уведомления
 
-//    @Column(nullable = false)
-//    private String variable; //JSON с доступными переменными
-//    Временно не использую
+    private String variable; //JSON с подставляемыми переменными
 
     @Column(nullable = false,updatable = false)
     private Date createdAt;
