@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import zhulikov.project.notificationservice.dto.RenderedTemplate;
 import zhulikov.project.notificationservice.dto.TemplateCreateRequest;
 import zhulikov.project.notificationservice.dto.TemplateResponse;
 import zhulikov.project.notificationservice.entity.Template;
@@ -27,16 +28,16 @@ public class TemplateService {
     private static final Pattern VARIABLE =
             Pattern.compile("\\{\\{\\s*([^{}]+?)\\s*}}");
 
-    public String render(Map<String,Object> variables, Long templateId) {
+    public RenderedTemplate render(Map<String,Object> variables, Long templateId) {
 
         Template template = templateRepo.findById(templateId)
                 .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        String result = replaceVariables(template.getContent(), variables);
+        String renderedContent = replaceVariables(template.getContent(),variables);
 
         log.debug("Rendered template id={} with {} variables", templateId, variables.size());
 
-        return result;
+        return new RenderedTemplate(renderedContent,template.getTheme());
     }
 
     public TemplateResponse create(TemplateCreateRequest dto) {
@@ -88,9 +89,11 @@ public class TemplateService {
         Matcher matcher = VARIABLE.matcher(content);
         StringBuilder result = new StringBuilder();
 
+        Map<String,Object> vars = variables != null ? variables : Map.of();
+
         while (matcher.find()) {
             String key = matcher.group(1).trim();
-            Object value = variables.get(key);
+            Object value = vars.get(key);
 
             String replacement = value == null
                     ? matcher.group(0)       // оставить {{key}}, если значения нет
