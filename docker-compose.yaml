@@ -1,4 +1,12 @@
 services:
+  gotify:
+    image: gotify/server
+    ports:
+      - "4040:80"
+    volumes:
+      - gotify_data:/app/data
+    environment:
+      GOTIFY_DEFAULTUSER_PASS: pass
   postgres:
     image: postgres:16-alpine
     environment:
@@ -31,10 +39,11 @@ services:
       - postgres
       - rabbitmq
       - mailpit
+      - gotify
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notification_service
       SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_PROFILES_ACTIVE: ${PROFILE:-prod}
+      SPRING_PROFILES_ACTIVE: ${PROFILE:-dev}
     ports:
       - "8081:8081"
     env_file:
@@ -43,3 +52,4 @@ services:
 
 volumes:
   postgres_data:
+  gotify_data:
