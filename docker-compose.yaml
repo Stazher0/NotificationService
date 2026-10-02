@@ -48,7 +48,7 @@ services:
       - "8081:8081"
     env_file:
       - .env
-      - .env.${PROFILE:-prod}
+      - .env.${PROFILE:-dev}
 
 volumes:
   postgres_data:
