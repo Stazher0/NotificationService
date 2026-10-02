@@ -34,22 +34,28 @@ public class DevPushSender implements PushSender {
 
         String url = gotifyUrl + "/message";
 
-        //header
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.set("X-Gotify-Key", gotifyToken);
+        //Оборачиваем body(form) и header в вид требуемый gotify
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(createForm(dto), createHeaders());
 
-        //Тело
+        restTemplate.postForEntity(url, request, String.class);
+
+        log.info("Push sent: id={}", dto.getNotificationId());
+    }
+
+
+    private HttpHeaders createHeaders(){
+        HttpHeaders header = new HttpHeaders();
+        header.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        header.set("X-Gotify-Key", gotifyToken);
+
+        return header;
+    }
+    private MultiValueMap<String, String> createForm(PushNotificationDto dto){
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
         form.add("title", dto.getTheme());
         form.add("message", dto.getContent());
         form.add("priority", "3");
 
-        //Оборачиваем body(form) и header в формат требуемый gotify
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(form, headers);
-
-        restTemplate.postForEntity(url, request, String.class);
-
-        log.info("Push sent: id={}", dto.getNotificationId());
+        return form;
     }
 }
