@@ -29,11 +29,11 @@ public class NotificationService {
         Notification notification = notificationMapper.toNotification(request);
 
         if (request.getTemplateId() != null) {
-            RenderedTemplate renderedTemplate = templateService.render(request.getVariables(), request.getTemplateId());
+            RenderedTemplate  renderedTemplate = templateService.render(request.getVariables(), request.getTemplateId());
             notification.setContent(renderedTemplate.content());
-            if (request.getTheme()==null) {
-                notification.setTheme(renderedTemplate.theme());
-            }
+            notification.setTheme(
+                    request.getTheme() != null ? request.getTheme() : renderedTemplate.theme()
+            );
             notification.setTemplateId(request.getTemplateId());
         }
 

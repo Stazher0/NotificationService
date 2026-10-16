@@ -33,11 +33,13 @@ public class TemplateService {
         Template template = templateRepo.findById(templateId)
                 .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        String renderedContent = replaceVariables(template.getContent(),variables);
+        Map<String,Object> vars = variables != null ? variables : Map.of();
 
-        log.debug("Rendered template id={} with {} variables", templateId, variables.size());
+        String renderedContent = replaceVariables(template.getContent(),vars);
 
-        return new RenderedTemplate(renderedContent,template.getTheme());
+        log.debug("Rendered template id={} with {} variables", templateId, vars.size());
+
+        return new RenderedTemplate(renderedContent,template.getTheme(),template.getNotificationType());
     }
 
     public TemplateResponse create(TemplateCreateRequest dto) {
