@@ -110,6 +110,43 @@ public class NotificationServiceTest {
         Notification saved = captor.getValue();
         assertEquals("test",saved.getTheme());
     }
+    @Test
+    void send_themeFromTemplate_whenRequestNull(){
+        Notification notification = givenNotification(NotificationType.EMAIL);
+        SendNotificationRequest request = givenSendRequestWithTemplate(NotificationType.EMAIL, null);
+        RenderedTemplate rendered = givenRenderedTemplate();
+        notification.setId(1L);
+        Map<String,Object> variables = Map.of("name", "Ivan");
+
+        when(notificationMapper.toNotification(request)).thenReturn(notification);
+        when(templateService.render(variables, 1L)).thenReturn(rendered);
+        when(notificationRepo.save(notification)).thenReturn(notification);
+
+        notificationService.send(request);
+
+        ArgumentCaptor<Notification> captor =  ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepo).save(captor.capture());
+        Notification saved = captor.getValue();
+        assertEquals("template-theme",saved.getTheme());
+    }
+    @Test
+    void send_setTemplateIdOnNotification(){
+        Notification notification = givenNotification(NotificationType.EMAIL);
+        SendNotificationRequest request = givenSendRequestWithTemplate(NotificationType.EMAIL, "theme");
+        RenderedTemplate rendered = givenRenderedTemplate();
+        notification.setId(1L);
+        Map<String,Object> variables = Map.of("name", "Ivan");
+
+        when(notificationMapper.toNotification(request)).thenReturn(notification);
+        when(templateService.render(variables, 1L)).thenReturn(rendered);
+        when(notificationRepo.save(notification)).thenReturn(notification);
+
+        notificationService.send(request);
+        ArgumentCaptor<Notification> captor =  ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepo).save(captor.capture());
+        Notification saved = captor.getValue();
+        assertEquals(1L,saved.getTemplateId());
+    }
 
     //SendToProducer Test
     @Test
@@ -186,11 +223,11 @@ public class NotificationServiceTest {
         notification.setDestination("destination");
         notification.setNotificationType(notificationType);
         notification.setPriorityType(PriorityType.MEDIUM);
-        notification.setTheme("default");
+        notification.setTheme("theme");
 
         return notification;
     }
     private RenderedTemplate givenRenderedTemplate(){
-        return new RenderedTemplate("rendered content","theme", NotificationType.EMAIL);
+        return new RenderedTemplate("rendered content","template-theme", NotificationType.EMAIL);
     }
 }
