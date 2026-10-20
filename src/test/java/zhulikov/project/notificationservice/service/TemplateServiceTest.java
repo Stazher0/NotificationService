@@ -238,6 +238,7 @@ public class TemplateServiceTest {
         assertEquals(NotificationType.EMAIL,result.type());
     }
 
+    //Helpers
     private void givenTemplate(String content){
         Template template = new Template();
         template.setContent(content);
